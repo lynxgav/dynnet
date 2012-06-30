@@ -4,7 +4,7 @@
 
 double beta=2.5;
 double delta=1.;
-double gama=0.05;
+double gama=0.1;
 
 enum{SUS=0, INF=1, REC=2};
 
@@ -21,12 +21,12 @@ class CModel
 	CNode * Choose_Transition();
 	void Execute_Transition(CNode* node);
 	
-	void Iterate(double tmax);
+	void Iterate();
 	
 	//int Count_State(int start, int end);
 
 	CNetwork *network;
-	double t, tstep;
+	double t, tstep, tmax;
 	double elapsed;
  	private:
 };
@@ -39,11 +39,12 @@ int rec;
 void CModel::Initial_Conditions(){
 
 	t=0;
-	tstep=0.01;
+	tstep=0.001;
+	tmax=100;
 
 	elapsed=0;
-	inf=20748;
-	sus=498038;
+	inf=(int)(0.05*network->get_N());
+	sus=(int)(0.5*network->get_N());
 	rec=network->get_N()-inf-sus;
 
 	ERROR(rec<0, "The sum of infected and susceptibles is larger than total.");
@@ -68,8 +69,8 @@ void CModel::Initial_Conditions(){
 		UpdateProbabilities( *it );
 	}
 
-	inf=20748;
-	sus=498038;
+	inf=(int)(0.05*network->get_N());
+	sus=(int)(0.5*network->get_N());
 	rec=network->get_N()-inf-sus;
 
 }
@@ -126,18 +127,21 @@ void CModel::Execute_Transition(CNode* node){
 	}
 }
 
-void CModel::Iterate(double tmax){
+void CModel::Iterate(){
 	while(t<=tmax and inf>0){
 		Execute_Transition(Choose_Transition());
 		//cerr<< elapsed <<endl;
 		if(elapsed >= tstep){
 			t+=tstep;
-			cerr<< t <<"\t"<< sus<<"\t"<< inf <<"\t"<<rec<<endl;
+			cout<< t <<"\t"<< sus <<"\t"<< inf <<"\t"<< rec <<endl;
 			elapsed-=tstep;
 			}
 		
 	}
 
 }
+
+//git commit -a -m "Initial commit. Very slow"
+//git push origin master
 
 #endif /* MODEL_H */

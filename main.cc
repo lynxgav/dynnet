@@ -15,14 +15,7 @@ int main(int argc, char **argv){
 
 	CModel model(net);
 	model.Initial_Conditions();
-	model.Iterate(10);
-
-
-	//if(argc>2)secondrun=atoi(argv[2]);
-	//Initial_Conditions();
-
-	//Run();
-	//finish();
+	model.Iterate();
 
 return 0;
 

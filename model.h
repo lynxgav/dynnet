@@ -4,7 +4,7 @@
 
 double beta=2.5;
 double delta=1.;
-double gama=0.1;
+double gama=2.5;
 
 enum{SUS=0, INF=1, REC=2};
 
@@ -40,11 +40,14 @@ void CModel::Initial_Conditions(){
 
 	t=0;
 	tstep=0.001;
-	tmax=100;
+	tmax=6;
 
 	elapsed=0;
-	inf=(int)(0.05*network->get_N());
-	sus=(int)(0.5*network->get_N());
+
+	network->TotalProb=0.;
+
+	inf=(int)(0.03003*network->get_N());
+	sus=(int)(0.5929*network->get_N());
 	rec=network->get_N()-inf-sus;
 
 	ERROR(rec<0, "The sum of infected and susceptibles is larger than total.");
@@ -69,8 +72,10 @@ void CModel::Initial_Conditions(){
 		UpdateProbabilities( *it );
 	}
 
-	inf=(int)(0.05*network->get_N());
-	sus=(int)(0.5*network->get_N());
+	//cerr<< sus << "\t" << inf << "\t" << rec << endl;
+
+	inf=(int)(0.03003*network->get_N());
+	sus=(int)(0.5929*network->get_N());
 	rec=network->get_N()-inf-sus;
 
 }
@@ -80,23 +85,21 @@ void CModel::UpdateProbabilities(CNode* node){
 	else if ( node->state==REC ) { node->prob=gama;}
 	else if ( node->state==SUS ) { int nc=node->count_neighbours_state(INF); node->prob=beta*nc;}
 	else { cerr << "Error in Initial Conditions" << endl; }
+	network->TotalProb+=node->prob;
 }
 
-double vProb[1000000];
+double vProb[100000];
 CNode * CModel::Choose_Transition(){
-	double p_sum=0;
-	vector<CNode *>::iterator it;
-	int i=0;
-	
-	for (it=network->nodes.begin(); it!=network->nodes.end(); it++,i++) {
-		vProb[i]=p_sum+=(*it)->prob;
-	}
 	
 	std::tr1::uniform_real<double> unif(0, 1);
-	elapsed-=log(1.0-unif(eng))/p_sum;
-	p_sum*=unif(eng);
+	elapsed-=log(1.0-unif(eng))/network->TotalProb;
+	double chosen=network->TotalProb*unif(eng);
 
-	for(i=0; p_sum>=vProb[i]; i++){};
+	double p_sum;
+	int i;
+
+	for(i=0, p_sum=network->nodes.at(i)->prob; chosen >= p_sum ; i++, p_sum+=network->nodes.at(i)->prob){};
+
 	return network->nodes.at(i);
 }
 
@@ -117,12 +120,16 @@ void CModel::Execute_Transition(CNode* node){
 	}
 	else { cerr << "Error in Initial Conditions" << endl; }
 
-	UpdateProbabilities( node );
+	network->TotalProb-=node->prob;
+	UpdateProbabilities( node );//TotalProb is updated here
 
 	list<CNode*>::iterator it;
 	if(node->state!=SUS){
 		for(it=node->neighbours.begin(); it!=node->neighbours.end(); it++) {
-			UpdateProbabilities( *it );
+			if( (*it)->state == SUS ){
+				network->TotalProb-=(*it)->prob;
+				UpdateProbabilities( *it );
+			}
 		}
 	}
 }
@@ -133,7 +140,7 @@ void CModel::Iterate(){
 		//cerr<< elapsed <<endl;
 		if(elapsed >= tstep){
 			t+=tstep;
-			cout<< t <<"\t"<< sus <<"\t"<< inf <<"\t"<< rec <<endl;
+			cout<< t <<"\t"<< sus/(double)network->get_N() <<"\t"<< inf/(double)network->get_N() <<"\t"<< rec/(double)network->get_N() <<endl;
 			elapsed-=tstep;
 			}
 		

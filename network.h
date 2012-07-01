@@ -27,6 +27,7 @@ class CNetwork
 		return nodes.size();
 		}
 	unsigned int N;
+	double TotalProb;
  	private:
 	};
 

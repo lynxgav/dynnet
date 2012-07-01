@@ -11,7 +11,7 @@ int main(int argc, char **argv){
 	if(argc>1)seed=atoi(argv[1]);
 	eng.seed(seed);
 
-	CNetwork *net=new CRRGraph(1000000, 4);
+	CNetwork *net=new CRRGraph(100000, 4);
 
 	CModel model(net);
 	model.Initial_Conditions();

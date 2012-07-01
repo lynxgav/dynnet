@@ -20,6 +20,7 @@ class CNode
 	int count_neighbours_state(int s);
 	int ID;
 	unsigned int degree;
+	int index;
 	int state;
 	double prob;
  	private:
@@ -40,8 +41,9 @@ bool CNode::add_neighbour(CNode* p_node, bool trial ){
 	ERROR(degree != neighbours.size(), "Degree is not equal to number of neighbours");
 	list<CNode*>::iterator it=find(neighbours.begin(), neighbours.end(), p_node);
 	ERROR(trial==false && it!=neighbours.end(), "The neighbour already exists");
+	ERROR(trial==false && this==p_node, "A node cannot be a neigbour of itself");
 
-	if (it!=neighbours.end()) return false;
+	if (it!=neighbours.end() || this==p_node) return false;
 	neighbours.push_back(p_node);
 	degree=neighbours.size();
 	return true;// success

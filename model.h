@@ -81,6 +81,7 @@ void CModel::Initial_Conditions(){
 }
 
 void CModel::UpdateProbabilities(CNode* node){
+	network->TotalProb-=node->prob;
 	if( node->state==INF ) { node->prob=delta;}
 	else if ( node->state==REC ) { node->prob=gama;}
 	else if ( node->state==SUS ) { int nc=node->count_neighbours_state(INF); node->prob=beta*nc;}
@@ -88,7 +89,7 @@ void CModel::UpdateProbabilities(CNode* node){
 	network->TotalProb+=node->prob;
 }
 
-double vProb[100000];
+
 CNode * CModel::Choose_Transition(){
 	
 	std::tr1::uniform_real<double> unif(0, 1);
@@ -120,14 +121,12 @@ void CModel::Execute_Transition(CNode* node){
 	}
 	else { cerr << "Error in Initial Conditions" << endl; }
 
-	network->TotalProb-=node->prob;
 	UpdateProbabilities( node );//TotalProb is updated here
 
 	list<CNode*>::iterator it;
 	if(node->state!=SUS){
 		for(it=node->neighbours.begin(); it!=node->neighbours.end(); it++) {
 			if( (*it)->state == SUS ){
-				network->TotalProb-=(*it)->prob;
 				UpdateProbabilities( *it );
 			}
 		}

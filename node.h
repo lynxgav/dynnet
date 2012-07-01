@@ -10,7 +10,7 @@ using namespace std;
 class CNode
 	{
 	public:
-	CNode(int id=-1){ID=id; degree=0;}
+	CNode(int id=-1){ID=id; degree=0; prob=0;}
 	~CNode();
 	list<CNode*> neighbours;
 	bool add_neighbour(CNode*, bool trial=false);
